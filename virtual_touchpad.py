@@ -23,30 +23,30 @@ def compute_homography(touchpad): # Compute the homography matrix
     h, _ = cv2.findHomography(touchpad, rect)
     return h
 
-def segment_skin(frame):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_skin = np.array([0, 20, 70], dtype=np.uint8)
-    upper_skin = np.array([20, 255, 255], dtype=np.uint8)
-    mask = cv2.inRange(hsv, lower_skin, upper_skin)
-    return mask
+def segment_skin(frame):# Segment the skin in the frame
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) # Convert to HSV color space
+    lower_skin = np.array([0, 43, 18], dtype=np.uint8) # Define lower
+    upper_skin = np.array([20, 255, 255], dtype=np.uint8) # and upper
+    mask = cv2.inRange(hsv, lower_skin, upper_skin) # Create a mask
+    return mask # Return the mask
 
-def detect_finger(skin):
-    contours, _ = cv2.findContours(skin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    if not contours:
+def detect_finger(mask): # Detect the finger in the segmented skin
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Find contours
+    if not contours: # Return None if no contours are found
+        return None    
+
+    largest_contour = max(contours, key=cv2.contourArea) # Find the largest contour
+    hull = cv2.convexHull(largest_contour, returnPoints=False) # Compute the convex hull
+    if len(hull) < 3: # Return None if the convex hull has less than 3 points
         return None
 
-    largest_contour = max(contours, key=cv2.contourArea)
-    hull = cv2.convexHull(largest_contour, returnPoints=False)
-    if len(hull) < 3:
-        return None
-
-    try:
-        defects = cv2.convexityDefects(largest_contour, hull)
-    except cv2.error as e:
+    try: # Compute the convexity defects
+        defects = cv2.convexityDefects(largest_contour, hull) 
+    except cv2.error as e: # Handle errors
         print(f"Error in convexityDefects: {e}")
         return None
 
-    if defects is None:
+    if defects is None: # Return None if no defects are found
         return None
 
     # Find the farthest point from the convex hull
