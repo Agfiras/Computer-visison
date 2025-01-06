@@ -9,7 +9,7 @@ SKIN_COLOR_LOWER = np.array([0, 48, 80], dtype=np.uint8)
 SKIN_COLOR_UPPER = np.array([20, 255, 255], dtype=np.uint8)
 
 # Homography target rectangle size
-RECT_SIZE = (500, 300)
+RECT_SIZE = (300, 200)
 CURSOR_SMOOTHING_FACTOR = 0.3  # To reduce jitter
 
 # Get screen dimensions for full-screen calibration
@@ -73,6 +73,10 @@ def compute_homography(touchpad):
     """Compute homography matrix for touchpad."""
     rect = np.array([[0, 0], [RECT_SIZE[0], 0], [RECT_SIZE[0], RECT_SIZE[1]], [0, RECT_SIZE[1]]], dtype="float32")
     return cv2.findHomography(touchpad, rect)[0]
+
+    print("Homography Matrix:\n", homography_matrix)
+    
+    return homography_matrix
 
 
 def segment_skin(frame):
@@ -171,7 +175,7 @@ def main():
 
             # Draw detected touchpad
             cv2.drawContours(frame, [touchpad], -1, (0, 255, 0), 2)
-
+        cv2.imshow("Canny edge", detect_edges(frame))
         cv2.imshow("Virtual Touchpad", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -181,4 +185,4 @@ def main():
     print("Program terminated.")
 
 
-main()
+main() 
